@@ -1,0 +1,47 @@
+{
+  "name": "entity-component",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon | npx pino-pretty",
+    "start": "node",
+    "test": "tap"
+  },
+  "author": "Gregory Daynes <gregdaynes@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@istanbuljs/esm-loader-hook": "^0.1.2",
+    "eslint": "^7.32.0",
+    "nodemon": "^2.0.12",
+    "pino-pretty": "^6.0.0",
+    "prettier": "^2.3.2",
+    "sinon": "^11.1.2",
+    "tap": "^15.0.9"
+  },
+  "tap": {
+    "node-arg": [
+      "--no-warnings",
+      "--experimental-loader",
+      "@istanbuljs/esm-loader-hook"
+    ]
+  },
+  "eslintConfig": {
+    "extends": "eslint:recommended",
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 12
+    },
+    "env": {
+      "es6": true,
+      "node": true,
+      "browser": true
+    },
+    "rules": {}
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  }
+}
