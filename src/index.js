@@ -156,14 +156,3 @@ for (let i = 0; i < 2; i = i + delta) {
 
   console.log('---') // end of tick
 }
-
-console.log(
-  JSON.stringify({
-    player,
-    entityManager,
-    entityHasComponent: entityManager.hasComponentOfType(
-      player,
-      'DemoComponent'
-    ),
-  })
-)
