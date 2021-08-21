@@ -1,4 +1,5 @@
 import { EntityManager } from './entity-manager.js'
+import { SystemManager } from './system-manager.js'
 import { Component } from './component-base.js'
 import { System } from './system-base.js'
 
@@ -31,17 +32,18 @@ export class DemoSystem extends System {
 
 const entityManager = new EntityManager()
 const player = entityManager.createTaggedEntity('player')
-const player2 = entityManager.createTaggedEntity('player')
 entityManager.addComponent(player, new DemoComponent(10))
-entityManager.addComponent(player2, new DemoComponent(5))
+
+const systemManager = new SystemManager()
 const demoSystem = new DemoSystem()
+systemManager.addSystem(demoSystem)
 
 const delta = 1
-for (let i = 0; i < 2; i = i + delta) {
-  // systems go here
+const frames = 2
+for (let i = 0; i < frames; i = i + delta) {
   demoSystem.processTick(delta, entityManager)
 
-  console.log('---') // end of tick
+  console.log('---')
 }
 
-console.log(JSON.stringify(entityManager))
+console.log(JSON.stringify({ entityManager }))
