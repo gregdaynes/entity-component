@@ -9,7 +9,7 @@ export class ScheduleMaintenance extends System {
       'ScheduledMaintenance'
     )
 
-    let accumulator = []
+    let accumulator = {}
     for (let entity of entitiesForMaintenance) {
       const scheduledMaintenanceComponents = entityManager.componentOfType(
         entity,
@@ -18,13 +18,13 @@ export class ScheduleMaintenance extends System {
 
       for (let component of scheduledMaintenanceComponents) {
         if (component.dateUTC === currentFrameDateUTC) {
-          accumulator.push(entity)
+          accumulator[entity] = component
           entityManager.removeComponent(entity, component)
         }
       }
     }
 
-    for (let entity of accumulator) {
+    for (let [entity, scheduleComponent] of Object.entries(accumulator)) {
       const maintenanceComponents = entityManager.componentOfType(
         entity,
         'Maintenance'
@@ -33,6 +33,7 @@ export class ScheduleMaintenance extends System {
       if (maintenanceComponents.length) {
         for (let component of maintenanceComponents) {
           component.inMaintenance = true
+          component.facility = scheduleComponent.facility
         }
       }
     }

@@ -1,6 +1,6 @@
 import { EntityManager } from './lib/entity-manager.js'
 import { SystemManager } from './lib/system-manager.js'
-import { mark, measure } from './lib/perf.js'
+import { mark as perfMark, measure as perfMeasure } from './lib/perf.js'
 import { DAY_IN_MS } from './lib/constants.js'
 
 import { ScheduledMaintenance } from './component-scheduled-maintenance.js'
@@ -8,9 +8,10 @@ import { default as Ship } from './factory-ship.js'
 import { EvaluateMaintenance } from './system-evaluate-maintenance.js'
 import { Render } from './system-render.js'
 import { ScheduleMaintenance } from './system-schedule-maintenance.js'
+import { CheckFacilityOverlap } from './system-check-facility-overlap.js'
 
-mark('A')
-measure('Startup', 'A')
+perfMark('A')
+perfMeasure('Startup', 'A')
 const entityManager = new EntityManager()
 const systemManager = new SystemManager()
 const epoch = Date.now()
@@ -34,37 +35,39 @@ entityManager.addComponent(
     facility: 'A',
   })
 )
-// entityManager.addComponent(
-//   ship1,
-//   new ScheduledMaintenance({
-//     dateUTC: epoch + 86400000 * 3,
-//     facility: 'C',
-//   })
-// )
-// entityManager.addComponent(
-//   ship1,
-//   new ScheduledMaintenance({
-//     dateUTC: epoch + 86400000 * 4,
-//     facility: 'D',
-//   })
-// )
+entityManager.addComponent(
+  ship1,
+  new ScheduledMaintenance({
+    dateUTC: epoch + 86400000 * 3,
+    facility: 'C',
+  })
+)
+entityManager.addComponent(
+  ship1,
+  new ScheduledMaintenance({
+    dateUTC: epoch + 86400000 * 4,
+    facility: 'D',
+  })
+)
 
 const evaluateMaintenance = systemManager.addSystem(new EvaluateMaintenance())
 const render = systemManager.addSystem(new Render())
 const scheduleMaintenance = systemManager.addSystem(new ScheduleMaintenance())
+const checkFacilityOverlap = systemManager.addSystem(new CheckFacilityOverlap())
 
 const delta = 1
-const frames = 0
-mark('B')
-measure('Init complete', 'A', 'B')
+const frames = 5
+perfMark('B')
+perfMeasure('Init complete', 'A', 'B')
 
-mark('C')
+perfMark('C')
 for (let i = 0; i <= frames; i = i + delta) {
   scheduleMaintenance.processTick(i, entityManager, epoch)
+  checkFacilityOverlap.processTick(i, entityManager)
   evaluateMaintenance.processTick(i, entityManager)
 }
-mark('D')
-measure('Processing', 'C', 'D')
+perfMark('D')
+perfMeasure('Processing', 'C', 'D')
 
-// render.processTick(0, entityManager)
-measure('Total Runtime')
+// render.processTick('end', entityManager)
+perfMeasure('Total Runtime')

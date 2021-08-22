@@ -5,5 +5,6 @@ export class Maintenance extends Component {
     super()
     this.rate = rate
     this.inMaintenance = false
+    this.facility = undefined
   }
 }
