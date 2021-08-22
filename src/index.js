@@ -1,8 +1,6 @@
-import { PerformanceObserver, performance } from 'node:perf_hooks'
-
 import { EntityManager } from './lib/entity-manager.js'
 import { SystemManager } from './lib/system-manager.js'
-import { default as logger } from './lib/logger.js'
+import { mark, measure } from './lib/perf.js'
 
 import { CumulativeWear } from './component-cumulative-wear.js'
 import { Renderable } from './component-renderable.js'
@@ -14,46 +12,50 @@ import { Render } from './system-render.js'
 import { ScheduleMaintenance } from './system-schedule-maintenance.js'
 import { Debug } from './system-debug.js'
 
-const obs = new PerformanceObserver((items) => {
-  for (let { name, duration } of items.getEntries()) {
-    logger.info({ name, duration })
+class Ship {
+  constructor(entityManager) {
+    const entityUUID = entityManager.createTaggedEntity('ship')
+    this.id = entityUUID
+    entityManager.addComponent(entityUUID, new CumulativeWear())
+    entityManager.addComponent(entityUUID, new Renderable())
+    entityManager.addComponent(entityUUID, new Maintenance())
   }
-  performance.clearMarks()
-})
-obs.observe({ type: 'measure' })
+}
 
-performance.mark('A')
+mark('A')
+measure('Startup', 'A')
 const entityManager = new EntityManager()
 const systemManager = new SystemManager()
 const epoch = Date.now()
 
-const ship = entityManager.createTaggedEntity('ship')
-entityManager.addComponent(ship, new CumulativeWear())
-entityManager.addComponent(ship, new Renderable())
-entityManager.addComponent(ship, new Maintenance())
+const ship1 = new Ship(entityManager)
+const ship2 = new Ship(entityManager)
+const ship3 = new Ship(entityManager)
+const ship4 = new Ship(entityManager)
+
 entityManager.addComponent(
-  ship,
+  ship1.id,
   new ScheduledMaintenance({
     dateUTC: epoch + 86400000,
     facility: 'A',
   })
 )
 entityManager.addComponent(
-  ship,
+  ship1.id,
   new ScheduledMaintenance({
     dateUTC: epoch + 86400000 * 2,
     facility: 'B',
   })
 )
 entityManager.addComponent(
-  ship,
+  ship1.id,
   new ScheduledMaintenance({
     dateUTC: epoch + 86400000 * 3,
     facility: 'C',
   })
 )
 entityManager.addComponent(
-  ship,
+  ship1.id,
   new ScheduledMaintenance({
     dateUTC: epoch + 86400000 * 4,
     facility: 'D',
@@ -63,23 +65,19 @@ entityManager.addComponent(
 const evaluateMaintenance = systemManager.addSystem(new EvaluateMaintenance())
 const render = systemManager.addSystem(new Render())
 const scheduleMaintenance = systemManager.addSystem(new ScheduleMaintenance())
-const debug = systemManager.addSystem(new Debug())
 
 const delta = 1
-const frames = 2
-performance.mark('B')
+const frames = 3000000
+mark('B')
+measure('Init complete', 'A', 'B')
 
-performance.mark('C')
+mark('C')
 for (let i = 0; i <= frames; i = i + delta) {
-  // logger.info('--- Start of frame ---')
-  // debug.processTick(i, entityManager)
   scheduleMaintenance.processTick(i, entityManager, epoch)
   evaluateMaintenance.processTick(i, entityManager)
-  // render.processTick(i, entityManager)
-  // logger.info('--- End of frame ---')
 }
-performance.mark('D')
+mark('D')
+measure('Processing', 'C', 'D')
 
-performance.measure('Startup', 'A')
-performance.measure('Init complete', 'A', 'B')
-performance.measure('Processing', 'C', 'D')
+render.processTick(0, entityManager)
+measure('Total Runtime')
