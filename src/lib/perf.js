@@ -1,9 +1,13 @@
 import { PerformanceObserver, performance } from 'node:perf_hooks'
 
 const obs = new PerformanceObserver((items) => {
+  const timeSeries = {}
   for (let { name, duration } of items.getEntries()) {
-    console.log(duration, name)
+    timeSeries[name] = duration
   }
+
+  console.table([timeSeries])
+
   performance.clearMarks()
 })
 obs.observe({ type: 'measure' })

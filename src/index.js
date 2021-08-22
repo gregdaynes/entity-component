@@ -20,8 +20,6 @@ const ship2 = Ship(entityManager)
 // const ship3 = Ship(entityManager)
 // const ship4 = Ship(entityManager)
 
-console.log(ship1)
-
 entityManager.addComponent(
   ship1,
   new ScheduledMaintenance({
@@ -68,5 +66,5 @@ for (let i = 0; i <= frames; i = i + delta) {
 mark('D')
 measure('Processing', 'C', 'D')
 
-render.processTick(0, entityManager)
+// render.processTick(0, entityManager)
 measure('Total Runtime')
