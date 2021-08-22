@@ -10,5 +10,7 @@ export class SystemManager {
     if (!system) throw new Error('system must be specified')
 
     this.systemStores[system.constructor.name] = system
+
+    return system
   }
 }
