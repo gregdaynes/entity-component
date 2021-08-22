@@ -1,10 +1,9 @@
 import { System } from './lib/system.js'
+import { DAY_IN_MS } from './lib/constants.js'
 
 export class ScheduleMaintenance extends System {
-  DAY_MILLISECONDS = 86400000
-
   processTick(delta, entityManager, epoch) {
-    const currentFrameDateUTC = epoch + delta * this.DAY_MILLISECONDS
+    const currentFrameDateUTC = epoch + delta * DAY_IN_MS
 
     const entitiesForMaintenance = entityManager.allEntitiesWithComponentOfType(
       'ScheduledMaintenance'
