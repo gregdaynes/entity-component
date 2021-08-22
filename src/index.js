@@ -9,6 +9,7 @@ import { EvaluateMaintenance } from './system-evaluate-maintenance.js'
 import { Render } from './system-render.js'
 import { ScheduleMaintenance } from './system-schedule-maintenance.js'
 import { CheckFacilityOverlap } from './system-check-facility-overlap.js'
+import { AssociateDataRef } from './system-associate-data-reference.js'
 
 perfMark('A')
 perfMeasure('Startup', 'A')
@@ -16,10 +17,16 @@ const entityManager = new EntityManager()
 const systemManager = new SystemManager()
 const epoch = Date.now()
 
-const ship1 = Ship(entityManager)
+const data = {
+  ship1Ref: {
+    name: 'Boaty McBoatface',
+  },
+}
+
+const ship1 = Ship(entityManager, { dataRef: 'ship1Ref' })
 const ship2 = Ship(entityManager)
-// const ship3 = Ship(entityManager)
-// const ship4 = Ship(entityManager)
+const ship3 = Ship(entityManager)
+const ship4 = Ship(entityManager)
 
 entityManager.addComponent(
   ship1,
@@ -52,11 +59,12 @@ entityManager.addComponent(
 
 const evaluateMaintenance = systemManager.addSystem(new EvaluateMaintenance())
 const render = systemManager.addSystem(new Render())
+const associateDataRef = systemManager.addSystem(new AssociateDataRef())
 const scheduleMaintenance = systemManager.addSystem(new ScheduleMaintenance())
 const checkFacilityOverlap = systemManager.addSystem(new CheckFacilityOverlap())
 
 const delta = 1
-const frames = 5
+const frames = 1
 perfMark('B')
 perfMeasure('Init complete', 'A', 'B')
 
@@ -69,5 +77,6 @@ for (let i = 0; i <= frames; i = i + delta) {
 perfMark('D')
 perfMeasure('Processing', 'C', 'D')
 
-// render.processTick('end', entityManager)
+associateDataRef.processTick('end', entityManager, data)
+render.processTick('end', entityManager)
 perfMeasure('Total Runtime')
