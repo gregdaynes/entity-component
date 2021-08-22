@@ -116,4 +116,17 @@ export class EntityManager {
       return store[entityUUID]
     }
   }
+
+  allComponentsOfEntity(entityUUID) {
+    if (!entityUUID) throw new Error('UUID must be specified')
+
+    const componentMap = {}
+    const store = this.componentStores
+    for (let [componentType, component] of Object.entries(store)) {
+      const x = component[entityUUID][0]
+      if (x) componentMap[componentType] = x
+    }
+
+    return componentMap
+  }
 }
