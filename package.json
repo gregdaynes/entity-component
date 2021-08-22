@@ -43,5 +43,8 @@
   "prettier": {
     "semi": false,
     "singleQuote": true
+  },
+  "dependencies": {
+    "pino": "^6.13.1"
   }
 }
