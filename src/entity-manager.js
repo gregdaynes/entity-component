@@ -47,6 +47,31 @@ export class EntityManager {
     }
   }
 
+  removeComponent(entityUUID, component) {
+    if (!entityUUID) throw new Error('UUID must be specified')
+    if (!component) throw new Error('component must be specified')
+
+    let store = this.componentStores[component.constructor.name][entityUUID]
+    if (!store) return
+
+    let newStore = []
+    for (let componentInStore of store) {
+      if (componentInStore.id != component.id) {
+        newStore.push(componentInStore)
+      }
+    }
+
+    if (newStore.length) {
+      this.componentStores[component.constructor.name][entityUUID] = newStore
+    } else {
+      delete this.componentStores[component.constructor.name][entityUUID]
+    }
+
+    if (!Object.keys(this.componentStores[component.constructor.name]).length) {
+      delete this.componentStores[component.constructor.name]
+    }
+  }
+
   hasComponentOfType(entityUUID, componentClass) {
     if (!entityUUID) throw new Error('UUID must be specified')
     if (!componentClass) throw new Error('componentClass must be specified')
