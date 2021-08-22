@@ -102,7 +102,7 @@ export class EntityManager {
   allEntitiesWithComponentOfType(componentClass) {
     if (!componentClass) throw new Error('componentClass must be specified')
 
-    return Object.keys(this.componentStores[componentClass]) || []
+    return Object.keys(this.componentStores[componentClass] || {})
   }
 
   componentOfType(entityUUID, componentClass) {
