@@ -38,7 +38,9 @@
       "node": true,
       "browser": true
     },
-    "rules": {}
+    "rules": {
+      "no-unused-vars": "warn"
+    }
   },
   "prettier": {
     "semi": false,
