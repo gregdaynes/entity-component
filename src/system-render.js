@@ -1,3 +1,4 @@
+import { default as tinySonic } from 'tinysonic'
 import { System } from './lib/system.js'
 import { default as logger } from './lib/logger.js'
 import { mark as perfMark, register as perfRegister } from './lib/perf.js'
@@ -13,9 +14,12 @@ export class Render extends System {
 
       let components = {}
       for (let [componentType, component] of Object.entries(entityComponents)) {
-        components[componentType] = component?.map((component) => {
+        let value = component?.map((component) => {
           return component.toJSON()
         })
+
+        if (value?.length === 1) value = value[0]
+        components[componentType] = value
       }
 
       renderable.push({ id, components })
@@ -32,6 +36,9 @@ export class Render extends System {
       perfMark(`Render:${name}_END`)
       perfRegister('System', `Render:${name}`)
     }
+
+    const snapshot = tinySonic.stringify(output)
+    entityManager.bus.emit('RENDER_SNAPSHOT', snapshot)
 
     logger.info(output)
   }

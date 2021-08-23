@@ -75,7 +75,7 @@ for (let i = 0; i <= frames; i = i + delta) {
 perfMark('LOOP_END')
 
 associateDataRef.run('end', entityManager, data)
-render.run('end', entityManager, {
+render.run(null, entityManager, {
   sideChannel,
   eventChannel,
 })
