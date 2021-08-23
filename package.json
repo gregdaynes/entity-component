@@ -5,8 +5,9 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon | npx pino-pretty",
-    "start": "node",
+    "dev": "nodemon src/index.js | npx pino-pretty",
+    "start": "node src/index.js",
+    "profile": "PERF=1 node src/index.js | npx pino-pretty",
     "test": "tap"
   },
   "author": "Gregory Daynes <gregdaynes@gmail.com>",

@@ -1,20 +1,24 @@
 import { EntityManager } from './lib/entity-manager.js'
 import { SystemManager } from './lib/system-manager.js'
-import { mark as perfMark, measure as perfMeasure } from './lib/perf.js'
+import {
+  mark as perfMark,
+  measure as perfMeasure,
+  run as perfReport,
+  register as perfRegister,
+} from './lib/perf.js'
 import { DAY_IN_MS } from './lib/constants.js'
 
 import { ScheduledMaintenance } from './component-scheduled-maintenance.js'
 import { default as Ship } from './factory-ship.js'
 import { EvaluateMaintenance } from './system-evaluate-maintenance.js'
-import { Render } from './system-render.js'
+// import { Render } from './system-render.js'
 import { ScheduleMaintenance } from './system-schedule-maintenance.js'
 import { CheckFacilityOverlap } from './system-check-facility-overlap.js'
 import { AssociateDataRef } from './system-associate-data-reference.js'
 
-perfMark('A')
-perfMeasure('Startup', 'A')
+perfMark('SETUP_BEGIN')
+perfMeasure('Script: Startup', 'SETUP_BEGIN')
 const entityManager = new EntityManager()
-const systemManager = new SystemManager()
 const epoch = Date.now()
 
 const data = {
@@ -23,10 +27,10 @@ const data = {
   },
 }
 
+const sideChannel = {}
+
 const ship1 = Ship(entityManager, { dataRef: 'ship1Ref' })
-const ship2 = Ship(entityManager)
-const ship3 = Ship(entityManager)
-const ship4 = Ship(entityManager)
+const ship2 = Ship(entityManager, { dataRef: 'ship2Ref' })
 
 entityManager.addComponent(
   ship1,
@@ -35,6 +39,7 @@ entityManager.addComponent(
     facility: 'A',
   })
 )
+
 entityManager.addComponent(
   ship2,
   new ScheduledMaintenance({
@@ -42,41 +47,34 @@ entityManager.addComponent(
     facility: 'A',
   })
 )
-entityManager.addComponent(
-  ship1,
-  new ScheduledMaintenance({
-    dateUTC: epoch + 86400000 * 3,
-    facility: 'C',
-  })
-)
-entityManager.addComponent(
-  ship1,
-  new ScheduledMaintenance({
-    dateUTC: epoch + 86400000 * 4,
-    facility: 'D',
-  })
-)
 
+const systemManager = new SystemManager()
 const evaluateMaintenance = systemManager.addSystem(new EvaluateMaintenance())
-const render = systemManager.addSystem(new Render())
+// const render = systemManager.addSystem(new Render())
 const associateDataRef = systemManager.addSystem(new AssociateDataRef())
 const scheduleMaintenance = systemManager.addSystem(new ScheduleMaintenance())
 const checkFacilityOverlap = systemManager.addSystem(new CheckFacilityOverlap())
 
 const delta = 1
 const frames = 1
-perfMark('B')
-perfMeasure('Init complete', 'A', 'B')
+perfMark('SETUP_END')
 
-perfMark('C')
+perfMark('LOOP_BEGIN')
 for (let i = 0; i <= frames; i = i + delta) {
-  scheduleMaintenance.processTick(i, entityManager, epoch)
-  checkFacilityOverlap.processTick(i, entityManager)
-  evaluateMaintenance.processTick(i, entityManager)
+  scheduleMaintenance.run(i, entityManager, epoch)
+  checkFacilityOverlap.run(i, entityManager, sideChannel)
+  evaluateMaintenance.run(i, entityManager)
 }
-perfMark('D')
-perfMeasure('Processing', 'C', 'D')
+perfMark('LOOP_END')
 
-associateDataRef.processTick('end', entityManager, data)
-render.processTick('end', entityManager)
-perfMeasure('Total Runtime')
+associateDataRef.run('end', entityManager, data)
+// render.run('end', entityManager)
+// logger.info({ sideChannel })
+
+perfMark('SCRIPT_END')
+perfMeasure('Execution Time', 'SETUP_BEGIN', 'SETUP_END')
+perfRegister('Script', 'Execution Time', 'SETUP', 'SCRIPT')
+perfRegister('Script', 'Init complete', 'SETUP', 'SETUP')
+perfRegister('Script', 'Processing', 'LOOP', 'LOOP')
+
+perfReport()
