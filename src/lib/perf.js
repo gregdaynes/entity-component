@@ -20,7 +20,7 @@ export const observer = (callback) => {
 
 export const register = !process.env.PERF
   ? () => {}
-  : (tag, name, a = name, b = name) => {
+  : (tag, name, a = name, b = a) => {
       if (a === 'now') {
         performance.mark(`${a}_NOW`)
         measureable.push([`${tag}: ${name}`, `${a}_NOW`])
@@ -71,7 +71,8 @@ function observerReport(list, observer) {
   for (let [entry, value] of Object.entries(timeSeries).sort((a, b) => {
     return b[1] - a[1]
   })) {
-    const [name, group = ''] = entry.split(': ').reverse()
+    const [name, group] = entry.split(': ').reverse()
+    if (!group) continue
 
     formatted.push(
       `${group.padEnd(maxGroup)} ${name.padEnd(maxName, '.')}${value

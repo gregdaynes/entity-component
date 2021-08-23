@@ -1,5 +1,4 @@
 import { EntityManager } from './lib/entity-manager.js'
-import { SystemManager } from './lib/system-manager.js'
 import {
   mark as perfMark,
   measure as perfMeasure,
@@ -21,31 +20,27 @@ import { AssociateDataRef } from './system-associate-data-reference.js'
 
 perfMark('SETUP_BEGIN')
 perfMeasure('Script: Startup', 'SETUP_BEGIN')
-const entityManager = new EntityManager()
-const systemManager = new SystemManager()
-const evaluateMaintenance = systemManager.addSystem(new EvaluateMaintenance())
-const render = systemManager.addSystem(new Render())
-const associateDataRef = systemManager.addSystem(new AssociateDataRef())
-const scheduleMaintenance = systemManager.addSystem(new ScheduleMaintenance())
-const checkFacilityOverlap = systemManager.addSystem(new CheckFacilityOverlap())
-const checkFacilityOverlapEvent = systemManager.addSystem(
-  new CheckFacilityOverlapEvent()
-)
-
 const epoch = Date.now()
+const entityManager = new EntityManager()
+// systems
+const evaluateMaintenance = new EvaluateMaintenance()
+const render = new Render()
+const associateDataRef = new AssociateDataRef()
+const scheduleMaintenance = new ScheduleMaintenance()
+const checkFacilityOverlap = new CheckFacilityOverlap()
+const checkFacilityOverlapEvent = new CheckFacilityOverlapEvent()
 
+// data stores
+const sideChannel = {}
+const eventChannel = {}
 const data = {
   ship1Ref: {
     name: 'Boaty McBoatface',
   },
 }
 
-const sideChannel = {}
-const eventChannel = {}
-
+// constructing entities
 const ship1 = Ship(entityManager, { dataRef: 'ship1Ref' })
-const ship2 = Ship(entityManager, { dataRef: 'ship2Ref' })
-
 entityManager.addComponent(
   ship1,
   new ScheduledMaintenance({
@@ -53,7 +48,7 @@ entityManager.addComponent(
     facility: 'A',
   })
 )
-
+const ship2 = Ship(entityManager)
 entityManager.addComponent(
   ship2,
   new ScheduledMaintenance({
@@ -63,7 +58,7 @@ entityManager.addComponent(
 )
 
 const delta = 1
-const frames = 1_000
+const frames = 100000
 perfMark('SETUP_END')
 
 entityManager.bus.on('test', (payload) => {
@@ -88,7 +83,7 @@ render.run('end', entityManager, {
 perfMark('SCRIPT_END')
 perfMeasure('Execution Time', 'SETUP_BEGIN', 'SETUP_END')
 perfRegister('Script', 'Execution Time', 'SETUP', 'SCRIPT')
-perfRegister('Script', 'Init complete', 'SETUP', 'SETUP')
-perfRegister('Script', 'Processing', 'LOOP', 'LOOP')
+perfRegister('Script', 'Init complete', 'SETUP')
+perfRegister('Script', 'Processing', 'LOOP')
 
 perfReport()

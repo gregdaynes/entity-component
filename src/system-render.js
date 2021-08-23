@@ -21,16 +21,18 @@ export class Render extends System {
       renderable.push({ id, components })
     }
 
-    perfMark('eventChannelRender_BEGIN')
-    renderable.push(opts.eventChannel)
-    perfMark('eventChannelRender_END')
-    perfRegister('System', 'eventChannelRender')
+    const output = {
+      delta,
+      renderable,
+    }
 
-    perfMark('sideChannelRender_BEGIN')
-    renderable.push(opts.sideChannel)
-    perfMark('sideChannelRender_END')
-    perfRegister('System', 'sideChannelRender')
+    for (let [name, data] of Object.entries(opts)) {
+      perfMark(`Render:${name}_BEGIN`)
+      output[name] = data
+      perfMark(`Render:${name}_END`)
+      perfRegister('System', `Render:${name}`)
+    }
 
-    logger.info({ delta, renderable })
+    logger.info(output)
   }
 }
