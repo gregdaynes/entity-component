@@ -35,3 +35,36 @@ export class CheckFacilityOverlap extends System {
     }
   }
 }
+
+export class CheckFacilityOverlapEvent extends System {
+  processTick(delta, entityManager) {
+    const maintenanceEntities =
+      entityManager.allEntitiesWithComponentOfType('Maintenance')
+
+    let facilities = {}
+    for (let entity of maintenanceEntities) {
+      const maintenanceComponents = entityManager.componentOfType(
+        entity,
+        'Maintenance'
+      )
+
+      for (let component of maintenanceComponents) {
+        if (!component.facility) break
+
+        if (facilities[component.facility]) {
+          facilities[component.facility].push(component)
+        } else {
+          facilities[component.facility] = [component]
+        }
+      }
+    }
+
+    for (let [facility, entries] of Object.entries(facilities)) {
+      if (entries.length > 1) {
+        entityManager.bus.emit('test', {
+          info: `Facility ${facility}: is overloaded`,
+        })
+      }
+    }
+  }
+}

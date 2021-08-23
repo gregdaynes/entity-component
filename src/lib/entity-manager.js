@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto'
+import { default as EventEmitter } from 'node:events'
 
 export class EntityManager {
   constructor() {
@@ -6,6 +7,7 @@ export class EntityManager {
     this.idsToTags = {}
     this.tagsToIds = {}
     this.componentStores = {}
+    this.bus = new EventEmitter()
   }
 
   createBasicEntity() {

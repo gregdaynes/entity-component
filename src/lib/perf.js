@@ -51,7 +51,7 @@ function observerReport(list, observer) {
 
   let maxGroup = 0
   let maxName = 0
-  let maxValue = 9
+  let maxValue = 9 // length of Time (ms)
   for (let [entry, value] of Object.entries(timeSeries)) {
     const [name, group = ''] = entry.split(': ').reverse()
     maxGroup = group.length > maxGroup ? group.length : maxGroup
@@ -65,7 +65,7 @@ function observerReport(list, observer) {
   let formatted = [
     `${'Group'.padEnd(maxGroup)} ${'Measurement '.padEnd(
       maxName
-    )} ${'Time (ms)'.padEnd(maxValue, '-')}`,
+    )}${'Time (ms)'.padStart(maxValue)}`,
   ]
 
   for (let [entry, value] of Object.entries(timeSeries).sort((a, b) => {
@@ -74,7 +74,7 @@ function observerReport(list, observer) {
     const [name, group = ''] = entry.split(': ').reverse()
 
     formatted.push(
-      `${group.padEnd(maxGroup)} ${name.padEnd(maxName, '.')}.${value
+      `${group.padEnd(maxGroup)} ${name.padEnd(maxName, '.')}${value
         .toFixed(3)
         .toString()
         .padStart(maxValue, '.')}`
