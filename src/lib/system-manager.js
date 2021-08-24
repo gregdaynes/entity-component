@@ -1,16 +1,38 @@
 import { randomUUID } from 'crypto'
 
 export class SystemManager {
-  constructor() {
+  constructor(engine) {
     this.id = randomUUID()
-    this.systemStores = []
+    this.systemStores = {}
+    this.engine = engine
+    this.add = this.addSystem.bind(this)
   }
 
-  addSystem(system) {
+  addSystem(system, ...args) {
     if (!system) throw new Error('system must be specified')
 
-    this.systemStores[system.constructor.name] = system
+    let instance = system
+    if (typeof system === 'function') {
+      instance = new system(this.engine, ...args)
+    }
 
-    return system
+    this.systemStores[instance.constructor.name] = instance
+
+    return instance
+  }
+
+  getSystem(system) {
+    const key = ((system) => {
+      switch (typeof system) {
+        case 'function':
+          return system.name
+        case 'object':
+          return system.constructor.name
+        case 'string':
+          return system
+      }
+    })(system)
+
+    return this.systemStores[key]
   }
 }

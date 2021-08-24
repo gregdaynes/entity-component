@@ -1,8 +1,14 @@
 import { mark, register } from './perf.js'
 
 export class System {
-  constructor() {
-    register('System', this.constructor.name)
+  constructor(engine) {
+    this.engine = engine
+    this.coldStart = true
+  }
+
+  _perfRegister() {
+    if (this.coldStart) register('System', this.constructor.name)
+    this.coldStart = false
   }
 
   _perfBegin() {
@@ -13,9 +19,11 @@ export class System {
     mark(this.constructor.name + '_END')
   }
 
-  run(...args) {
+  run(args) {
+    this._perfRegister()
+
     this._perfBegin()
-    this.processTick(...args)
+    this.processTick.bind(null, this.engine)(args)
     this._perfEnd()
   }
 

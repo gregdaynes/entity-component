@@ -4,13 +4,17 @@ import { default as logger } from './lib/logger.js'
 import { mark as perfMark, register as perfRegister } from './lib/perf.js'
 
 export class Render extends System {
-  processTick(delta, entityManager, opts = {}) {
+  processTick(
+    { EntityManager, ComponentManager, DataManager, EventManager },
+    { delta },
+    external = {}
+  ) {
     const renderableEntities =
-      entityManager.allEntitiesWithComponentOfType('Renderable')
+      ComponentManager.allEntitiesWithComponentOfType('Renderable')
 
     let renderable = []
     for (let id of renderableEntities) {
-      const entityComponents = entityManager.allComponentsOfEntity(id)
+      const entityComponents = ComponentManager.allComponentsOfEntity(id)
 
       let components = {}
       for (let [componentType, component] of Object.entries(entityComponents)) {
@@ -28,9 +32,10 @@ export class Render extends System {
     const output = {
       delta,
       renderable,
+      data: DataManager.data,
     }
 
-    for (let [name, data] of Object.entries(opts)) {
+    for (let [name, data] of Object.entries(external)) {
       perfMark(`Render:${name}_BEGIN`)
       output[name] = data
       perfMark(`Render:${name}_END`)
@@ -38,8 +43,6 @@ export class Render extends System {
     }
 
     const snapshot = tinySonic.stringify(output)
-    entityManager.bus.emit('RENDER_SNAPSHOT', snapshot)
-
-    logger.info(output)
+    EventManager.bus.emit('RENDER_SNAPSHOT', snapshot, output)
   }
 }

@@ -1,38 +1,24 @@
-import { EntityManager } from './lib/entity-manager.js'
-import {
-  mark as perfMark,
-  measure as perfMeasure,
-  run as perfReport,
-  register as perfRegister,
-} from './lib/perf.js'
-import { DAY_IN_MS } from './lib/constants.js'
-
-import { ScheduledMaintenance } from './component-scheduled-maintenance.js'
+import { Engine } from './lib/engine.js'
+import { run as perfReport } from './lib/perf.js'
 import { default as Ship } from './factory-ship.js'
 import { EvaluateMaintenance } from './system-evaluate-maintenance.js'
 import { Render } from './system-render.js'
 import { ScheduleMaintenance } from './system-schedule-maintenance.js'
-import {
-  CheckFacilityOverlap,
-  CheckFacilityOverlapEvent,
-} from './system-check-facility-overlap.js'
+import { CheckFacilityOverlap } from './system-check-facility-overlap.js'
 import { AssociateDataRef } from './system-associate-data-reference.js'
 
-perfMark('SETUP_BEGIN')
-perfMeasure('Script: Startup', 'SETUP_BEGIN')
 const epoch = Date.now()
-const entityManager = new EntityManager()
-// systems
-const evaluateMaintenance = new EvaluateMaintenance()
-const render = new Render()
-const associateDataRef = new AssociateDataRef()
-const scheduleMaintenance = new ScheduleMaintenance()
-const checkFacilityOverlap = new CheckFacilityOverlap()
-const checkFacilityOverlapEvent = new CheckFacilityOverlapEvent()
 
-// data stores
-const sideChannel = {}
-const eventChannel = {}
+const engine = new Engine()
+const System = engine.SystemManager.add
+const Events = engine.EventManager.bus
+
+// event handlers
+Events.on('RENDER_SNAPSHOT', (snapshot, output) => {
+  console.log(output)
+})
+
+// reference data
 const data = {
   ship1Ref: {
     name: 'Boaty McBoatface',
@@ -40,50 +26,21 @@ const data = {
 }
 
 // constructing entities
-const ship1 = Ship(entityManager, { dataRef: 'ship1Ref' })
-entityManager.addComponent(
-  ship1,
-  new ScheduledMaintenance({
-    dateUTC: epoch + DAY_IN_MS,
-    facility: 'A',
-  })
-)
-const ship2 = Ship(entityManager)
-entityManager.addComponent(
-  ship2,
-  new ScheduledMaintenance({
-    dateUTC: epoch + DAY_IN_MS,
-    facility: 'A',
-  })
-)
+Ship(engine, { dataRef: 'ship1Ref', epoch })
+Ship(engine, { epoch })
 
-const delta = 1
-const frames = 100000
-perfMark('SETUP_END')
+// run loop
+engine.loopFixed(1_000, [
+  [System(ScheduleMaintenance), { epoch }],
+  [System(CheckFacilityOverlap)],
+  [System(EvaluateMaintenance)],
+])
 
-entityManager.bus.on('FACILITY_OVERLOAD', (payload) => {
-  Object.assign(eventChannel, payload)
-})
+// post processing
+engine.loopFixed(1, [
+  [System(AssociateDataRef), { delta: 'end', data }],
+  [System(Render), { delta: null }],
+])
 
-perfMark('LOOP_BEGIN')
-for (let i = 0; i <= frames; i = i + delta) {
-  scheduleMaintenance.run(i, entityManager, epoch)
-  checkFacilityOverlap.run(i, entityManager, sideChannel)
-  checkFacilityOverlapEvent.run(i, entityManager)
-  evaluateMaintenance.run(i, entityManager)
-}
-perfMark('LOOP_END')
-
-associateDataRef.run('end', entityManager, data)
-render.run(null, entityManager, {
-  sideChannel,
-  eventChannel,
-})
-
-perfMark('SCRIPT_END')
-perfMeasure('Execution Time', 'SETUP_BEGIN', 'SETUP_END')
-perfRegister('Script', 'Execution Time', 'SETUP', 'SCRIPT')
-perfRegister('Script', 'Init complete', 'SETUP')
-perfRegister('Script', 'Processing', 'LOOP')
-
+// performance report
 perfReport()

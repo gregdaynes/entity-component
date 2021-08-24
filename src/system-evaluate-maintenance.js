@@ -1,14 +1,14 @@
 import { System } from './lib/system.js'
 
 export class EvaluateMaintenance extends System {
-  processTick(delta, entityManager) {
+  processTick({ delta, EntityManager, ComponentManager }) {
     const wearEntities =
-      entityManager.allEntitiesWithComponentOfType('CumulativeWear')
+      ComponentManager.allEntitiesWithComponentOfType('CumulativeWear')
     const maintainableEntities =
-      entityManager.allEntitiesWithComponentOfType('Maintenance')
+      ComponentManager.allEntitiesWithComponentOfType('Maintenance')
 
     for (let entity of wearEntities) {
-      const wearComponent = entityManager.componentOfType(
+      const wearComponent = ComponentManager.componentOfType(
         entity,
         'CumulativeWear'
       )
@@ -16,7 +16,7 @@ export class EvaluateMaintenance extends System {
       wearComponent[0].wear = wearComponent[0].wear + wearComponent[0].rate
 
       if (maintainableEntities.includes(entity)) {
-        const maintenanceComponent = entityManager.componentOfType(
+        const maintenanceComponent = ComponentManager.componentOfType(
           entity,
           'Maintenance'
         )

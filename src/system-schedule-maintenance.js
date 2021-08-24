@@ -2,16 +2,15 @@ import { System } from './lib/system.js'
 import { DAY_IN_MS } from './lib/constants.js'
 
 export class ScheduleMaintenance extends System {
-  processTick(delta, entityManager, epoch) {
+  processTick({ ComponentManager }, { delta, epoch }) {
     const currentFrameDateUTC = epoch + delta * DAY_IN_MS
 
-    const entitiesForMaintenance = entityManager.allEntitiesWithComponentOfType(
-      'ScheduledMaintenance'
-    )
+    const entitiesForMaintenance =
+      ComponentManager.allEntitiesWithComponentOfType('ScheduledMaintenance')
 
     let accumulator = {}
     for (let entity of entitiesForMaintenance) {
-      const scheduledMaintenanceComponents = entityManager.componentOfType(
+      const scheduledMaintenanceComponents = ComponentManager.componentOfType(
         entity,
         'ScheduledMaintenance'
       )
@@ -19,13 +18,13 @@ export class ScheduleMaintenance extends System {
       for (let component of scheduledMaintenanceComponents) {
         if (component.dateUTC === currentFrameDateUTC) {
           accumulator[entity] = component
-          entityManager.removeComponent(entity, component)
+          ComponentManager.removeComponent(entity, component)
         }
       }
     }
 
     for (let [entity, scheduleComponent] of Object.entries(accumulator)) {
-      const maintenanceComponents = entityManager.componentOfType(
+      const maintenanceComponents = ComponentManager.componentOfType(
         entity,
         'Maintenance'
       )
