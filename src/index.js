@@ -30,17 +30,25 @@ Ship(engine, { dataRef: 'ship1Ref', epoch })
 Ship(engine, { epoch })
 
 // run loop
-engine.loopFixed(1_000, [
-  [System(ScheduleMaintenance), { epoch }],
-  [System(CheckFacilityOverlap)],
-  [System(EvaluateMaintenance)],
-])
+engine.loopFixed(
+  1_000,
+  [
+    [System(ScheduleMaintenance), { epoch }],
+    [System(CheckFacilityOverlap)],
+    [System(EvaluateMaintenance)],
+  ],
+  'Main'
+)
 
 // post processing
-engine.loopFixed(1, [
-  [System(AssociateDataRef), { delta: 'end', data }],
-  [System(Render), { delta: null }],
-])
+engine.loopFixed(
+  1,
+  [
+    [System(AssociateDataRef), { delta: 'end', data }],
+    [System(Render), { delta: null }],
+  ],
+  'Post'
+)
 
 // performance report
 perfReport()

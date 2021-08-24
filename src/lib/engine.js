@@ -16,14 +16,15 @@ export class Engine {
     this.EventManager = new EventManager()
   }
 
-  loopFixed(iterations, systems) {
-    perfRegister('Engine', 'Processing Time', 'LOOP')
-    perfMark('LOOP_BEGIN')
+  loopFixed(iterations, systems, name) {
+    const [kebab, snake] = name ? [`-${name}`, `_${name}`] : ['', '']
+    perfRegister('Engine', `Loop Time${kebab} ${iterations}x`, `LOOP${snake}`)
+    perfMark(`LOOP${snake}_BEGIN`)
     for (let delta = 1; delta <= iterations; delta++) {
       for (let [system, args] of systems) {
         system.run.call(system, { delta, ...args })
       }
     }
-    perfMark('LOOP_END')
+    perfMark(`LOOP${snake}_END`)
   }
 }
