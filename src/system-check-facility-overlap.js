@@ -61,7 +61,7 @@ export class CheckFacilityOverlapEvent extends System {
 
     for (let [facility, entries] of Object.entries(facilities)) {
       if (entries.length > 1) {
-        entityManager.bus.emit('test', {
+        entityManager.bus.emit('FACILITY_OVERLOAD', {
           info: `Facility ${facility}: is overloaded`,
         })
       }

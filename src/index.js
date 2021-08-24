@@ -61,7 +61,7 @@ const delta = 1
 const frames = 100000
 perfMark('SETUP_END')
 
-entityManager.bus.on('test', (payload) => {
+entityManager.bus.on('FACILITY_OVERLOAD', (payload) => {
   Object.assign(eventChannel, payload)
 })
 
