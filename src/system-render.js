@@ -41,5 +41,6 @@ export class Render extends System {
     entityManager.bus.emit('RENDER_SNAPSHOT', snapshot)
 
     logger.info(output)
+    logger.info(tinySonic.parse(output))
   }
 }
